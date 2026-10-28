@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1f3d34">
+<title>NovusPal</title>
+<style>
+  :root {
+    --paper: #f4efe4;
+    --ink: #1c1914;
+    --muted: #6a6256;
+    --pine: #1c3b32;
+    --pine-2: #2c5a4a;
+    --gold: #e2b223;
+    --gold-deep: #9a6d10;
+    --card: rgba(255, 252, 246, 0.92);
+    --line: rgba(28, 25, 20, 0.1);
+    --shadow: 0 16px 40px rgba(70, 48, 12, 0.08);
+    --user-ink: #f7f3ea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #121614;
+      --ink: #f3eee4;
+      --muted: #b3aa9b;
+      --pine: #e2b223;
+      --pine-2: #c99a16;
+      --gold: #e2b223;
+      --gold-deep: #f0d078;
+      --card: rgba(28, 34, 31, 0.92);
+      --line: rgba(243, 238, 228, 0.1);
+      --shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+      --user-ink: #1c1914;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font: 16.5px/1.55 "Segoe UI", "Avenir Next", sans-serif;
+    background:
+      radial-gradient(980px 460px at -8% -12%, rgba(226, 178, 35, 0.38), transparent 58%),
+      radial-gradient(760px 520px at 112% -8%, rgba(44, 90, 74, 0.22), transparent 52%),
+      var(--paper);
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    backdrop-filter: blur(14px);
+    background: color-mix(in srgb, var(--paper) 78%, transparent);
+  }
+  .bar {
+    width: min(780px, 100%);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 16px 22px 12px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .seal {
+    width: 42px; height: 42px; flex: none;
+    border-radius: 14px;
+    background: var(--pine);
+    color: var(--user-ink);
+    display: grid; place-items: center;
+    box-shadow: 0 8px 18px rgba(28, 59, 50, 0.22);
+  }
+  .seal svg { width: 22px; height: 22px; }
+  h1 {
+    margin: 0;
+    font-family: Palatino, "Palatino Linotype", "Iowan Old Style", Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  .tag { margin: 0; color: var(--muted); font-size: 13px; }
+  .topics { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-start; }
+  .topics button {
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 6px 11px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .topics button[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  #log {
+    flex: 1;
+    overflow-y: auto;
+    width: min(780px, 100%);
+    margin: 0 auto;
+    padding: 8px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  #log > :first-child { margin-top: auto; }
+  .hello { margin-bottom: auto; padding: 12px 4px 28px; }
+  .kicker {
+    margin: 0 0 8px;
+    color: var(--gold-deep);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .hello h2 {
+    margin: 0;
+    font-family: Palatino, "Palatino Linotype", Georgia, serif;
+    font-size: clamp(32px, 5vw, 46px);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    max-width: 12ch;
+  }
+  .lede { margin: 14px 0 0; max-width: 42ch; color: var(--muted); }
+  .prompts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+  .prompts button {
+    text-align: left;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 16px;
+    padding: 14px 14px 13px;
+    font: inherit;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+  .prompts button strong { display: block; font-size: 15px; margin-bottom: 2px; }
+  .prompts button span { color: var(--muted); font-size: 13px; }
+  .prompts button:hover { border-color: color-mix(in srgb, var(--gold) 70%, var(--line)); }
+  .msg { display: flex; flex-direction: column; max-width: min(640px, 92%); animation: rise .22s ease; }
+  .user { align-self: flex-end; }
+  .bot { align-self: flex-start; }
+  .who { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin: 0 4px 6px; }
+  .avatar {
+    width: 22px; height: 22px; border-radius: 7px;
+    display: grid; place-items: center;
+    background: var(--gold); color: #1c1914; font-size: 12px; font-weight: 800;
+  }
+  .body {
+    padding: 12px 14px;
+    border-radius: 18px;
+    overflow-wrap: anywhere;
+  }
+  .user .body {
+    background: var(--pine);
+    color: var(--user-ink);
+    border-bottom-right-radius: 6px;
+  }
+  .bot .body {
+    background: var(--card);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    border-bottom-left-radius: 6px;
+  }
+  .body p { margin: 0 0 .6em; }
+  .body p:last-child { margin-bottom: 0; }
+  .body ul, .body ol { margin: .2em 0 .6em; padding-left: 1.2em; }
+  .body li { margin: .15em 0; }
+  .body code {
+    font-family: ui-monospace, "Cascadia Code", monospace;
+    font-size: .92em;
+    background: color-mix(in srgb, var(--gold) 22%, transparent);
+    padding: 0 .28em;
+    border-radius: 5px;
+  }
+  .src { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .src a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 12px;
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--card) 70%, transparent);
+    border-radius: 999px;
+    padding: 4px 9px;
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .src a:hover { color: var(--ink); border-color: var(--gold); }
+  .dots { display: inline-flex; gap: 5px; padding: 4px 2px; }
+  .dots i {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--gold-deep);
+    animation: blink 1s infinite ease-in-out;
+  }
+  .dots i:nth-child(2) { animation-delay: .15s; }
+  .dots i:nth-child(3) { animation-delay: .3s; }
+  form {
+    width: min(780px, 100%);
+    margin: 0 auto;
+    padding: 0 18px 18px;
+  }
+  .composer {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    padding: 8px 8px 8px 16px;
+    border-radius: 22px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  textarea {
+    flex: 1;
+    resize: none;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    max-height: 140px;
+    padding: 8px 0;
+  }
+  textarea::placeholder { color: var(--muted); }
+  button.send {
+    width: 44px; height: 44px; flex: none;
+    border: 0; border-radius: 16px;
+    background: var(--gold); color: #1c1914;
+    cursor: pointer;
+    display: grid; place-items: center;
+  }
+  button.send:disabled { opacity: .45; cursor: default; }
+  button.send svg { width: 18px; height: 18px; }
+  button:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+  @media (max-width: 680px) {
+    .topics { justify-content: flex-start; }
+    .prompts { grid-template-columns: 1fr; }
+    .hello h2 { max-width: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+  <div class="brand">
+    <div class="seal" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M12 3.2 14.1 9l6 .2-4.7 3.7 1.6 5.8L12 15.8 6.9 18.7 8.6 12.9 3.9 9.2 9.9 9 12 3.2Z" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div>
+      <h1>NovusPal</h1>
+      <p class="tag">Michigan Tech, answered plainly</p>
+    </div>
+  </div>
+  <div class="topics" role="group" aria-label="Topic">
+    <button type="button" data-cat="" aria-pressed="true">All</button>
+    <button type="button" data-cat="news" aria-pressed="false">News</button>
+    <button type="button" data-cat="events" aria-pressed="false">Events</button>
+    <button type="button" data-cat="library" aria-pressed="false">Library</button>
+    <button type="button" data-cat="tutoring" aria-pressed="false">Tutoring</button>
+    <button type="button" data-cat="registration" aria-pressed="false">Registration</button>
+  </div>
+  </div>
+</header>
+<main id="log">
+  <section class="hello" id="empty">
+    <p class="kicker">Campus assistant</p>
+    <h2>What do you need to know?</h2>
+    <p class="lede">Ask about hours, events, tutoring, or registration.</p>
+    <div class="prompts">
+      <button type="button" data-q="What are the library hours, and where can I study?"><strong>Library hours</strong><span>When it’s open and where to study</span></button>
+      <button type="button" data-q="What tutoring is available, and how do I sign up?"><strong>Tutoring</strong><span>What’s offered and how to join</span></button>
+      <button type="button" data-q="What events are coming up on campus?"><strong>What’s happening</strong><span>Events worth putting on the calendar</span></button>
+      <button type="button" data-q="How do I register for classes?"><strong>Registration</strong><span>The steps, dates, and where to go</span></button>
+    </div>
+  </section>
+</main>
+<form id="f">
+  <div class="composer">
+    <textarea id="q" rows="1" placeholder="Ask about campus…" maxlength="2000" required></textarea>
+    <button class="send" id="go" type="submit" aria-label="Send">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</form>
+<script>
+const log = document.getElementById('log');
+const q = document.getElementById('q');
+const go = document.getElementById('go');
+const history = [];
+let category = null;
+
+function autogrow() {
+  q.style.height = 'auto';
+  q.style.height = Math.min(q.scrollHeight, 140) + 'px';
+}
+q.addEventListener('input', autogrow);
+
+document.querySelectorAll('.topics button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    category = btn.dataset.cat || null;
+    document.querySelectorAll('.topics button').forEach(b => {
+      b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+    });
+    q.focus();
+  });
+});
+
+function nearBottom() {
+  return log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+}
+function follow() {
+  log.scrollTop = log.scrollHeight;
+}
+
+function renderMarkdown(raw) {
+  const esc = raw.replace(/\[(\d+)\]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const inline = (s) => s
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+  let html = '';
+  let list = null;
+  const close = () => { if (list) { html += list === 'ol' ? '</ol>' : '</ul>'; list = null; } };
+  for (const line of esc.split('\n')) {
+    const ol = line.match(/^\s*\d+\.\s+(.*)/);
+    const ul = line.match(/^\s*[-*]\s+(.*)/);
+    if (ol || ul) {
+      const type = ol ? 'ol' : 'ul';
+      if (list !== type) { close(); html += type === 'ol' ? '<ol>' : '<ul>'; list = type; }
+      html += '<li>' + inline((ol || ul)[1]) + '</li>';
+      continue;
+    }
+    close();
+    if (!line.trim()) continue;
+    html += '<p>' + inline(line) + '</p>';
+  }
+  close();
+  return html || '<p></p>';
+}
+
+function addUser(text) {
+  document.getElementById('empty')?.remove();
+  const d = document.createElement('div');
+  d.className = 'msg user';
+  const body = document.createElement('div');
+  body.className = 'body';
+  body.textContent = text;
+  d.appendChild(body);
+  log.appendChild(d);
+  follow();
+}
+
+function addBot() {
+  const d = document.createElement('div');
+  d.className = 'msg bot';
+  d.innerHTML = '<div class="who"><span class="avatar">N</span><span>NovusPal</span></div>';
+  const body = document.createElement('div');
+  body.className = 'body';
+  body.innerHTML = '<span class="dots" aria-label="Writing"><i></i><i></i><i></i></span>';
+  const src = document.createElement('div');
+  src.className = 'src';
+  d.append(body, src);
+  log.appendChild(d);
+  follow();
+  return { body, src };
+}
+
+document.querySelectorAll('.prompts button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    q.value = btn.dataset.q;
+    autogrow();
+    document.getElementById('f').requestSubmit();
+  });
+});
+
+q.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    document.getElementById('f').requestSubmit();
+  }
+});
+
+async function readEvents(res, onEvent) {
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '';
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let cut;
+    while ((cut = buf.indexOf('\n\n')) >= 0) {
+      const block = buf.slice(0, cut);
+      buf = buf.slice(cut + 2);
+      const data = block.split('\n').filter(l => l.startsWith('data:')).map(l => l.slice(5).trim()).join('');
+      if (data) onEvent(JSON.parse(data));
+    }
+  }
+}
+
+document.getElementById('f').addEventListener('submit', async e => {
+  e.preventDefault();
+  const message = q.value.trim();
+  if (!message || go.disabled) return;
+  const prior = history.slice(-6);
+  q.value = '';
+  autogrow();
+  go.disabled = true;
+  addUser(message);
+  const bot = addBot();
+  let answer = '';
+  let failed = false;
+  let stick = true;
+  try {
+    const r = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, category, history: prior }),
+    });
+    if (!r.ok || !r.body) throw new Error('request failed');
+    await readEvents(r, evt => {
+      stick = nearBottom();
+      if (evt.type === 'token') {
+        answer += evt.text;
+        bot.body.innerHTML = renderMarkdown(answer);
+      } else if (evt.type === 'error') {
+        failed = true;
+        const note = document.createElement('p');
+        note.textContent = evt.text;
+        if (!answer) bot.body.replaceChildren(note);
+        else bot.body.appendChild(note);
+      } else if (evt.type === 'sources' && evt.sources?.length) {
+        evt.sources.forEach(x => {
+          const a = document.createElement('a');
+          a.href = x.url;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.textContent = x.title || x.url;
+          bot.src.appendChild(a);
+        });
+      }
+      if (stick) follow();
+    });
+    if (!answer && !failed) bot.body.textContent = 'I didn’t get an answer back. Please try again.';
+    if (answer && !failed) {
+      history.push({ role: 'user', content: message });
+      history.push({ role: 'assistant', content: answer.slice(0, 1500) });
+    }
+  } catch (err) {
+    bot.body.textContent = 'Something went wrong. Please try again.';
+  }
+  go.disabled = false;
+  q.focus();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+# Postgres + pgvector backend (VECTOR_BACKEND=pgvector)
+psycopg[binary]>=3.2
+pgvector>=0.3
+# JavaScript-rendered pages (Source(render_js=True)); then run: playwright install chromium
+playwright>=1.47
